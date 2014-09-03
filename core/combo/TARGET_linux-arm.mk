@@ -75,7 +75,7 @@ TARGET_arm_CFLAGS :=    -O3 \
 
 # Modules can choose to compile some source as thumb.
 TARGET_thumb_CFLAGS :=  -mthumb \
-                        -O3 \
+                        -Os \
                         -fomit-frame-pointer \
                         -fno-strict-aliasing
 
