@@ -45,10 +45,9 @@ $(combo_target)HAVE_STRERROR_R_STRRET := 1
 $(combo_target)HAVE_STRLCPY := 0
 $(combo_target)HAVE_STRLCAT := 0
 $(combo_target)HAVE_KERNEL_MODULES := 0
-
-$(combo_target)GLOBAL_CFLAGS := -fno-exceptions -Wno-multichar
-$(combo_target)RELEASE_CFLAGS := -O3 -g -fstrict-aliasing
-$(combo_target)GLOBAL_LDFLAGS := -Wl,-O2
+$(combo_target)GLOBAL_CFLAGS := -O3 -DNDEBUG -funsafe-loop-optimizations -fivopts -ftree-loop-im -ftree-loop-ivcanon -ffunction-sections -fdata-sections -funswitch-loops -frename-registers -frerun-cse-after-loop -fomit-frame-pointer -fgcse-sm -fgcse-las -fweb -ftracer -Wno-error=unused-parameter -Wno-error=unused-but-set-variable -Wno-error=maybe-uninitialized -fno-exceptions -Wno-multichar
+$(combo_target)RELEASE_CFLAGS := -O3 -DNDEBUG -fno-strict-aliasing -funsafe-loop-optimizations -fivopts -ftree-loop-im -ftree-loop-ivcanon -ffunction-sections -fdata-sections -funswitch-loops -frename-registers -frerun-cse-after-loop -fomit-frame-pointer -fgcse-sm -fgcse-las -fweb -ftracer -Wno-error=unused-parameter -Wno-error=unused-but-set-variable -Wno-error=maybe-uninitialized
+$(combo_target)GLOBAL_LDFLAGS := -Wl,-O2 -Wl,--as-needed -Wl,--relax -Wl,--sort-common -Wl,--gc-sections
 $(combo_target)GLOBAL_ARFLAGS := crsP
 
 $(combo_target)EXECUTABLE_SUFFIX :=
