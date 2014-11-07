@@ -21,7 +21,9 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - pspush:   push commit to AOKP gerrit instance.
 - taco:     Builds for a single device using the pseudo buildbot
 - reposync: Parallel repo sync using ionice and SCHED_BATCH
+- addaokp:  Add git remote for the AOKP gerrit repository
 - addaosp:  Add git remote for the AOSP repository
+- addcm:    Add git remote for the CM repository
 - sdkgen:   Create and add a custom sdk platform to your sdk directory from this source tree
 Look at the source to view more functions. The complete list is:
 EOF
@@ -490,6 +492,7 @@ function brunch()
 function breakfast()
 {
     target=$1
+    local variant=$2
     AOKP_DEVICES_ONLY="true"
     unset LUNCH_MENU_CHOICES
     add_lunch_combo full-eng
@@ -510,7 +513,10 @@ function breakfast()
             lunch $target
         else
             # This is probably just the AOKP model name
-            lunch aokp_$target-userdebug
+            if [ -z "$variant" ]; then
+                variant="userdebug"
+            fi
+            lunch aokp_$target-$variant
         fi
     fi
     return $?
@@ -1597,6 +1603,39 @@ function taco() {
     done
 }
 
+function addaokp()
+{
+    git remote rm gerrit 2> /dev/null
+    if [ ! -d .git ]
+    then
+        echo "Not a git repository."
+        exit -1
+    fi
+    REPO=$(cat .git/config  | grep git://github.com/AOKP/ | awk '{ print $NF }' | sed s#git://github.com/##g)
+    if [ -z "$REPO" ]
+    then
+        REPO=$(cat .git/config  | grep https://github.com/AOKP/ | awk '{ print $NF }' | sed s#https://github.com/##g)
+        if [ -z "$REPO" ]
+        then
+          echo Unable to set up the git remote, are you in the root of the repo?
+          return 0
+        fi
+    fi
+    AOKPUSER=`git config --get review.gerrit.aokp.co.username`
+    if [ -z "$AOKPUSER" ]
+    then
+        git remote add gerrit ssh://gerrit.aokp.co:29418/$REPO
+    else
+        git remote add gerrit ssh://$AOKPUSER@gerrit.aokp.co:29418/$REPO
+    fi
+    if ( git remote -v | grep -qv gerrit ) then
+        echo "AOKP gerrit $REPO remote created"
+    else
+        echo "Error creating remote"
+        exit -1
+    fi
+}
+
 function addaosp() {
     git remote rm aosp >/dev/null 2>&1
     if [ ! -d .git ]; then
@@ -1608,6 +1647,33 @@ function addaosp() {
     git remote add aosp https://android.googlesource.com/platform/"$REPO".git
     if ( git remote -v | grep -qv aosp ) then
         echo "AOSP $REPO remote created"
+    else
+        echo "Error creating remote"
+        exit -1
+    fi
+}
+
+function addcm()
+{
+    git remote rm cm 2> /dev/null
+    if [ ! -d .git ]
+    then
+        echo "Not a git repository."
+        exit -1
+    fi
+    REPO=$(cat .git/config  | grep git://github.com/AOKP/ | awk '{ print $NF }' | sed s#AOKP/#CyanogenMod/android_#g)
+    if [ -z "$REPO" ]
+    then
+        REPO=$(cat .git/config  | grep https://github.com/AOKP/ | awk '{ print $NF }' | sed s#AOKP/#CyanogenMod/android_#g)
+        if [ -z "$REPO" ]
+        then
+          echo Unable to set up the git remote, are you in the root of the repo?
+          return 0
+        fi
+    fi
+    git remote add cm $REPO
+    if ( git remote -v | grep -qv cm ) then
+        echo "CM $REPO remote created"
     else
         echo "Error creating remote"
         exit -1
